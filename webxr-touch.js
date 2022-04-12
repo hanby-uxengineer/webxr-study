@@ -1,7 +1,24 @@
 import { ARButton } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js';    // (module) button for starting webxr session
 
 let camera, scene, renderer;
-let polyMesh, donutMesh;
+let controller;
+let mesh;
+
+function onSelect() {
+    const geometry = new THREE.ConeGeometry(0.1, 0.2, 32).rotateX(Math.PI/2);
+    const material = new THREE.MeshPhongMaterial({
+        color: 0xffffff * Math.random(),
+        shininess: 6,
+        flatShading: true,
+        transparent: 1,
+        opacity: 0.8
+    });
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, -0.6).applyMatrix4(controller.matrixWorld);     // where we tapped in space
+    mesh.quaternion.setFromRotationMatrix(controller.matrixWorld);      // rotating toward to camera
+    
+    scene.add(mesh);
+}
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -26,30 +43,9 @@ function init() {
     light.position.set(0.5, 1, 0.25);
     scene.add(light);
 
-    const polyGeometry = new THREE.IcosahedronGeometry(0.1, 1);     // (radius, detail) - meter units
-    const polyMaterial = new THREE.MeshPhongMaterial({
-        color: new THREE.Color("rgb(100, 225, 150)"),
-        shininess: 6,
-        flatShading: true,
-        transparent: 1,
-        opacity: 0.8
-    });
-    polyMesh = new THREE.Mesh(polyGeometry, polyMaterial);
-    polyMesh.position.set(0, 0, -0.5);
-    scene.add(polyMesh);
-
-    const donutGeometry = new THREE.TorusGeometry(0.13, 0.02, 12, 50);  // (radius, tube, radial segment, tublar segment)
-    const donutMaterial = new THREE.MeshPhongMaterial({
-        color: new THREE.Color("rgb(100, 150, 250)"),
-        shininess: 6,
-        flatShading: true,
-        transparent: 1,
-        opacity: 0.8
-    });
-    donutMesh = new THREE.Mesh(donutGeometry, donutMaterial);
-    donutMesh.position.set(0, 0, -0.5);
-    donutMesh.rotation.x -= 1;
-    scene.add(donutMesh);
+    controller = renderer.xr.getController(0);
+    controller.addEventListener('select', onSelect);    // tap
+    scene.add(controller);
 
     const button = ARButton.createButton(renderer);
     document.body.appendChild(button);
@@ -57,13 +53,7 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 }
 
-function rotateObjects() {
-    polyMesh.rotation.y -= 0.01;    // radian units
-    donutMesh.rotation.y -= 0.01;
-}
-
 function render() {
-    rotateObjects();
     renderer.render(scene, camera);
 }
 

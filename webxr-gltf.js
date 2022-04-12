@@ -1,7 +1,15 @@
 import { ARButton } from 'https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js';    // (module) button for starting webxr session
+
 let camera, scene, renderer;
 let loader;
 let model;
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 function init() {
     const container = document.createElement('div');
@@ -41,13 +49,6 @@ function init() {
     document.body.appendChild(button);
 
     window.addEventListener('resize', onWindowResize, false);
-}
-
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 let degrees = 0;
